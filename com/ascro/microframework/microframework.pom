@@ -4,6 +4,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ascro</groupId>
   <artifactId>microframework</artifactId>
-  <version>1.0.0</version>
+  <version>LATEST</version>
   <description>POM was created from install:install-file</description>
 </project>
