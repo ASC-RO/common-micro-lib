@@ -1,5 +1,10 @@
 # Common microservice library
 
+1. Provides common exception handler for REST calls
+2. Utils for REST headers
+3. Repository, Service, Criteria, Domain standard implementations
+4. User context implementations
+
 ## User context must be declared in a configuration file as RequestScope
 ```
 @Configuration
