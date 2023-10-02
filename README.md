@@ -5,6 +5,19 @@
 3. Repository, Service, Criteria, Domain standard implementations
 4. User context implementations
 
+## Import the library
+To import this library you need to declare this github repository as gradle repository
+```
+repositories {
+    maven { url "https://github.com/ASC-RO/common-micro-lib/raw/maven" }
+}
+
+dependencies {
+    implementation 'com.ascro:microframework:1.0.0'
+}
+```
+Note: Adjust the version accordingly
+
 ## User context must be declared in a configuration file as RequestScope
 ```
 @Configuration
