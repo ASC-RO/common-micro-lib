@@ -1,1 +1,59 @@
-# common-micro-lib
+# Common microservice library
+
+1. Provides common exception handler for REST calls
+2. Utils for REST headers
+3. Repository, Service, Criteria, Domain standard implementations
+4. User context implementations
+
+## Import the library
+To import this library you need to declare this github repository as gradle repository
+```
+repositories {
+    maven { url "https://github.com/ASC-RO/common-micro-lib/raw/maven" }
+}
+
+dependencies {
+    implementation 'com.ascro:microframework:1.0.0'
+}
+```
+Note: Adjust the version accordingly
+
+## User context must be declared in a configuration file as RequestScope
+```
+@Configuration
+public class SecurityConfig {
+    @Bean
+    @RequestScope
+    public UserContext userContext() {
+        return new UserContext();
+    }
+}
+```
+## The user context must be populated in a filter chain. For JWT authentication you can use the following snippet
+```
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class UserInfoFilter extends OncePerRequestFilter {
+    private final UserContext userContext;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication()).ifPresent(authentication -> {
+            final boolean isJwtAuth = authentication instanceof JwtAuthenticationToken;
+            if (!isJwtAuth) {
+                return;
+            }
+            try {
+                final JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
+                final Map<String, Object> userClaims = jwtAuthenticationToken.getToken().getClaims();
+                userContext.updateUserClaims(userClaims);
+            } catch (Exception e) {
+                this.logger.error("Failed to update user from jwt claims", e.getCause());
+            }
+        });
+
+        filterChain.doFilter(request, response);
+    }
+}
+```
