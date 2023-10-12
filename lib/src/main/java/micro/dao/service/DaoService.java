@@ -21,6 +21,9 @@ import java.util.function.Consumer;
 public abstract class DaoService<R extends StandardRepository<E, ID>, E extends IdEntity<ID>, ID> extends QueryService<E> {
     @Autowired
     protected R repository;
+    @Autowired
+    protected UserContext userContext;
+
 
     /**
      * Save an entity.
@@ -29,7 +32,6 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
      * @return the persisted entity.
      */
     public E save(E entity) {
-        log.debug("Request to save : {}", entity);
         return repository.save(entity);
     }
 
@@ -40,20 +42,7 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
      * @return the persisted entity.
      */
     public List<E> saveAll(List<E> entities) {
-        log.debug("Request to save all : {}", entities);
         return repository.saveAll(entities);
-    }
-
-    @Transactional(readOnly = true)
-    public List<E> findAll() {
-        log.debug("Request to get all entities");
-        return this.repository.findAllByTenantId(UserContext.getTenantId());
-    }
-
-    public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
-        Specification<E> specificationWithTenant = specification
-                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), UserContext.getTenantId()));
-        return this.repository.findAll(specificationWithTenant, pageable);
     }
 
     public Optional<E> update(final E entity, final Consumer<E> updateFunction) {
@@ -66,6 +55,12 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
         });
     }
 
+    public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
+        Specification<E> specificationWithTenant = specification
+                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
+        return this.repository.findAll(specificationWithTenant, pageable);
+    }
+
     /**
      * Get one entity by id.
      *
@@ -74,7 +69,6 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
      */
     @Transactional(readOnly = true)
     public Optional<E> findOne(ID entityId) {
-        log.debug("Request to get entity : {}", entityId);
         return repository.findById(entityId);
     }
 
@@ -84,17 +78,14 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
      * @param entityId the id of the entity.
      */
     public void delete(ID entityId) {
-        log.debug("Request to delete entity : {}", entityId);
         repository.deleteById(entityId);
     }
 
     public void delete(Example<E> example) {
-        log.debug("Request to delete entity : {}", example.getProbe());
         repository.delete(example.getProbe());
     }
 
     public void deleteAll(final Collection<E> entities) {
-        log.debug("Request to delete entities : {}", entities);
         this.repository.deleteAll(entities);
     }
 }

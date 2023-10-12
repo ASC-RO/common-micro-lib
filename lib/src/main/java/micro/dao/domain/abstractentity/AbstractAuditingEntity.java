@@ -1,43 +1,36 @@
 package micro.dao.domain.abstractentity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import micro.context.UserContext;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractAuditingEntity<PK> implements IdEntity<PK> {
-    @Column(name = "created_by", nullable = false, updatable = false)
-    private String createdBy;
+    @CreatedBy
+    @Column(name = "created_by")
+    protected String createdBy;
 
-    @CreatedDate
-    @Column(name = "created_date", updatable = false)
-    private Instant createdDate;
+    @CreationTimestamp
+    @Column(name = "created_date", columnDefinition = "timestamptz")
+    protected OffsetDateTime createdDate;
 
+    @LastModifiedBy
     @Column(name = "last_modified_by")
-    private String lastModifiedBy;
+    protected String lastModifiedBy;
 
-    @LastModifiedDate
-    @Column(name = "last_modified_date")
-    private Instant lastModifiedDate;
-
-    @PreUpdate
-    @PrePersist
-    public void updateCreated() {
-        createdBy = UserContext.getUserName();
-        lastModifiedBy = UserContext.getUserName();
-        createdDate = Instant.now();
-        lastModifiedDate = Instant.now();
-    }
+    @UpdateTimestamp
+    @Column(name = "last_modified_date", columnDefinition = "timestamptz")
+    protected OffsetDateTime lastModifiedDate;
 
     @Override
     public boolean equals(Object o) {

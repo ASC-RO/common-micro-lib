@@ -5,13 +5,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Data
-@Component
 public class UserContext implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
     private Map<String, Object> tokenClaims;
@@ -31,10 +29,16 @@ public class UserContext implements ApplicationContextAware {
     }
 
     public static String getUserName() {
-        return UserContext.get().getUser().getUsername();
+        return UserContext.get().username();
     }
     public static UUID getTenantId() {
-        return UserContext.get().getUser().getTenantId();
+        return UserContext.get().tenantId();
+    }
+    public UUID tenantId() {
+        return this.getUser().getTenantId();
+    }
+    public String username() {
+        return this.getUser().getUsername();
     }
     public void updateUserClaims(final Map<String, Object> tokenClaims) {
         this.tokenClaims = tokenClaims;
