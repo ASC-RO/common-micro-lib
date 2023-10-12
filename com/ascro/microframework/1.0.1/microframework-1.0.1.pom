@@ -5,5 +5,5 @@
   <groupId>com.ascro</groupId>
   <artifactId>microframework</artifactId>
   <version>1.0.1</version>
-  <description>POM was modified</description>
+  <description>POM was created from install:install-file</description>
 </project>
