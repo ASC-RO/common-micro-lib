@@ -18,7 +18,7 @@ dependencies {
 ```
 Note: Adjust the version accordingly
 
-## You only need to import user context config in the main app and all will be setup
+## Option 1: Import user context config in the main app
 ```
 @SpringBootApplication
 @Import({ UserContextConfig.class })
@@ -26,6 +26,31 @@ public class MainApp {
 
     public static void main(String[] args) {
         SpringApplication.run(MainApp.class, args);
+    }
+}
+```
+
+### Option 2: Remove it from @SpringBootApplication and extend it in a config file
+This is an example where auditorAware is overriden to allow auditor work without a request session.
+```
+@Configuration
+public class ContextConfig extends UserContextConfig {
+    @Bean
+    @Lazy
+    @Override
+    public AuditorAware<String> auditorAware() {
+        final String username = getUserContext()
+                .map(UserContext::getUser)
+                .map(UserInfo::getUsername)
+                .orElse(SYSTEM_USER);
+        return () -> Optional.of(username);
+    }
+
+    private Optional<UserContext> getUserContext() {
+        if (RequestContextHolder.getRequestAttributes() == null) {
+            return Optional.empty();
+        }
+        return Optional.of(userContext());
     }
 }
 ```
