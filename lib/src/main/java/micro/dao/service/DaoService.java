@@ -25,22 +25,10 @@ public abstract class DaoService<R extends JpaRepository<E, ID> & JpaSpecificati
     @Autowired
     protected UserContext userContext;
 
-    /**
-     * Save an entity.
-     *
-     * @param entity the entity to save.
-     * @return the persisted entity.
-     */
     public E save(E entity) {
         return repository.save(entity);
     }
 
-    /**
-     * Save all entities.
-     *
-     * @param entities the entities to save.
-     * @return the persisted entity.
-     */
     public List<E> saveAll(List<E> entities) {
         return repository.saveAll(entities);
     }
@@ -59,16 +47,14 @@ public abstract class DaoService<R extends JpaRepository<E, ID> & JpaSpecificati
         return this.repository.findAll(specification, pageable);
     }
 
-    @Transactional(readOnly = true)
     public Optional<E> findOne(ID entityId) {
         return repository.findById(entityId);
     }
 
-    /**
-     * Delete the entity.
-     *
-     * @param entity the entity.
-     */
+    public boolean existsById(ID entityId) {
+        return repository.existsById(entityId);
+    }
+
     public void delete(E entity) {
         repository.delete(entity);
     }

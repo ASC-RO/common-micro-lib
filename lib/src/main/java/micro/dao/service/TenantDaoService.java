@@ -40,24 +40,21 @@ public abstract class TenantDaoService<R extends TenantRepository<E, ID>, E exte
 
     @Override
     public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
-        Specification<E> specificationWithTenant = specification
-                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
-        return super.findBySpecification(specificationWithTenant, pageable);
+        return super.findBySpecification(specificationWithTenant(specification), pageable);
     }
 
     @Override
     public Optional<E> findOne(ID entityId) {
-        final Specification<E> specification = entityIdSpecification(entityId)
-                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
-        return repository.findOne(specification);
+        return repository.findOne(specificationWithTenant(entityId));
     }
 
-    protected abstract Specification<E> entityIdSpecification(ID entityId);
+    @Override
+    public boolean existsById(ID entityId) {
+        return repository.exists(specificationWithTenant(entityId));
+    }
 
     public long delete(ID entityId) {
-        final Specification<E> specification = entityIdSpecification(entityId)
-                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
-        return repository.delete(specification);
+        return repository.delete(specificationWithTenant(entityId));
     }
 
     @Override
@@ -78,5 +75,17 @@ public abstract class TenantDaoService<R extends TenantRepository<E, ID>, E exte
                 .filter(entity -> entity.getTenantId().equals(userContext.tenantId()))
                 .toList();
         super.deleteAll(tenantEntities);
+    }
+
+    protected abstract Specification<E> entityIdSpecification(ID entityId);
+
+    protected Specification<E> specificationWithTenant(ID entityId) {
+        return specificationWithTenant(entityIdSpecification(entityId));
+    }
+
+    protected Specification<E> specificationWithTenant(Specification<E> specification) {
+        return specification.and((entityRoot, criteriaQuery, criteriaBuilder) ->
+                criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId())
+        );
     }
 }
