@@ -3,12 +3,13 @@ package micro.dao.service;
 import lombok.extern.slf4j.Slf4j;
 import micro.context.UserContext;
 import micro.dao.domain.abstractentity.IdEntity;
-import micro.dao.repository.StandardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -18,12 +19,11 @@ import java.util.function.Consumer;
 
 @Transactional
 @Slf4j
-public abstract class DaoService<R extends StandardRepository<E, ID>, E extends IdEntity<ID>, ID> extends QueryService<E> {
+public abstract class DaoService<R extends JpaRepository<E, ID> & JpaSpecificationExecutor<E>, E extends IdEntity<ID>, ID> extends QueryService<E> {
     @Autowired
     protected R repository;
     @Autowired
     protected UserContext userContext;
-
 
     /**
      * Save an entity.
@@ -56,33 +56,29 @@ public abstract class DaoService<R extends StandardRepository<E, ID>, E extends 
     }
 
     public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
-        Specification<E> specificationWithTenant = specification
-                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
-        return this.repository.findAll(specificationWithTenant, pageable);
+        return this.repository.findAll(specification, pageable);
     }
 
-    /**
-     * Get one entity by id.
-     *
-     * @param entityId the id of the entity.
-     * @return the entity.
-     */
     @Transactional(readOnly = true)
     public Optional<E> findOne(ID entityId) {
         return repository.findById(entityId);
     }
 
     /**
-     * Delete the entity by id.
+     * Delete the entity.
      *
-     * @param entityId the id of the entity.
+     * @param entity the entity.
      */
-    public void delete(ID entityId) {
-        repository.deleteById(entityId);
+    public void delete(E entity) {
+        repository.delete(entity);
     }
 
     public void delete(Example<E> example) {
         repository.delete(example.getProbe());
+    }
+
+    public void deleteBy(ID entityId) {
+        repository.deleteById(entityId);
     }
 
     public void deleteAll(final Collection<E> entities) {

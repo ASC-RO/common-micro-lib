@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 @Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class AbstractAuditingEntity<PK> implements IdEntity<PK> {
+public abstract class AuditableEntity {
     @CreatedBy
     @Column(name = "created_by")
     protected String createdBy;
@@ -31,19 +31,4 @@ public abstract class AbstractAuditingEntity<PK> implements IdEntity<PK> {
     @UpdateTimestamp
     @Column(name = "last_modified_date", columnDefinition = "timestamptz")
     protected OffsetDateTime lastModifiedDate;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractAuditingEntity<?> that = (AbstractAuditingEntity<?>) o;
-
-        return this.getEntityId().equals(that.getEntityId());
-    }
-
-    @Override
-    public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
-        return getClass().hashCode();
-    }
 }

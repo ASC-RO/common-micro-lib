@@ -1,10 +1,12 @@
 package micro.dao.service;
 
 import lombok.extern.slf4j.Slf4j;
-import micro.dao.domain.abstractentity.StandardEntity;
-import micro.dao.domain.pk.StandardEntityPK;
+import micro.dao.domain.abstractentity.TenantEntity;
 import micro.dao.repository.TenantRepository;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -14,7 +16,7 @@ import java.util.function.Consumer;
 
 @Transactional
 @Slf4j
-public abstract class TenantDaoService<R extends TenantRepository<E, ID>, E extends StandardEntity<ID>, ID extends StandardEntityPK> extends DaoService<R, E, ID> {
+public abstract class TenantDaoService<R extends TenantRepository<E, ID>, E extends TenantEntity<ID>, ID> extends DaoService<R, E, ID> {
     @Override
     public E save(E entity) {
         entity.setTenantId(userContext.tenantId());
@@ -29,22 +31,39 @@ public abstract class TenantDaoService<R extends TenantRepository<E, ID>, E exte
 
     @Override
     public Optional<E> update(final ID entityId, final Consumer<E> updateFunction) {
-        entityId.setTenantId(userContext.tenantId());
-        return super.update(entityId, updateFunction);
+        return this.findOne(entityId).map(entity -> {
+            entity.setTenantId(userContext.tenantId());
+            updateFunction.accept(entity);
+            return this.save(entity);
+        });
     }
 
+    @Override
+    public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
+        Specification<E> specificationWithTenant = specification
+                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
+        return super.findBySpecification(specificationWithTenant, pageable);
+    }
 
-    @Transactional(readOnly = true)
     @Override
     public Optional<E> findOne(ID entityId) {
-        entityId.setTenantId(userContext.tenantId());
-        return super.findOne(entityId);
+        final Specification<E> specification = entityIdSpecification(entityId)
+                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
+        return repository.findOne(specification);
+    }
+
+    protected abstract Specification<E> entityIdSpecification(ID entityId);
+
+    public long delete(ID entityId) {
+        final Specification<E> specification = entityIdSpecification(entityId)
+                .and((entityRoot, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(entityRoot.get("tenantId"), userContext.tenantId()));
+        return repository.delete(specification);
     }
 
     @Override
-    public void delete(ID entityId) {
-        entityId.setTenantId(userContext.tenantId());
-        super.delete(entityId);
+    public void delete(E entity) {
+        entity.setTenantId(userContext.tenantId());
+        super.delete(entity);
     }
 
     @Override
