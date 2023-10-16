@@ -4,6 +4,7 @@ import micro.context.UserContext;
 import micro.context.UserInfo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.context.annotation.RequestScope;
@@ -11,6 +12,7 @@ import org.springframework.web.context.annotation.RequestScope;
 import java.util.Optional;
 
 @Configuration
+@Profile("production")
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class UserContextConfig {
     public static final String SYSTEM_USER = "SYSTEM";
