@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Data
@@ -51,7 +52,7 @@ public class UserContext implements ApplicationContextAware {
                 .image(userClaims.get("image"))
                 .role(userClaims.get("role"))
                 .tenantId(UUID.fromString(userClaims.get("tenantId")))
-                .customerId(UUID.fromString(userClaims.get("customerId")))
+                .customerId(Optional.of(userClaims.get("customerId")).map(UUID::fromString).orElse(null))
                 .build();
         this.user.setCreatedAt(userClaims.get("createdAt"));
         this.user.setUpdatedAt(userClaims.get("updatedAt"));
