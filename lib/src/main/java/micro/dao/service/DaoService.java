@@ -44,7 +44,7 @@ public abstract class DaoService<R extends JpaRepository<E, ID> & JpaSpecificati
     }
 
     public Page<E> findBySpecification(Specification<E> specification, Pageable pageable) {
-        return this.repository.findAll(specification, pageable);
+        return this.repository.findAll(specification, Optional.ofNullable(pageable).orElse(Pageable.ofSize(100)));
     }
 
     public Optional<E> findOne(ID entityId) {
