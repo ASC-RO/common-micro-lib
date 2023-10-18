@@ -2,6 +2,7 @@ package micro.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +14,13 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
+
+    @ExceptionHandler({DataIntegrityViolationException.class})
+    public ResponseEntity<ApiError> handleException(DataIntegrityViolationException e, HttpServletRequest request) {
+        log.error("DataIntegrityViolationException thrown", e.getCause());
+        ApiError apiError = new ApiError(request.getRequestURI(), e.getMessage(), HttpStatus.CONFLICT.value(), LocalDateTime.now());
+        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiError> handleException(EntityNotFoundException e, HttpServletRequest request) {
