@@ -51,7 +51,7 @@ public abstract class DaoService<R extends JpaRepository<E, ID> & JpaSpecificati
         return repository.findById(entityId);
     }
 
-    public boolean existsById(ID entityId) {
+    public boolean existsById2(ID entityId) {
         return repository.existsById(entityId);
     }
 
