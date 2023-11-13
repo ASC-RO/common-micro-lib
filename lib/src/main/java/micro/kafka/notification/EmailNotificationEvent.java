@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.core.io.InputStreamSource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 public class EmailNotificationEvent extends NotificationEvent {
     private final String to;
     private String from;
-    private List<AttachmentFile> attachments;
+    private List<AttachmentFile> attachments = new ArrayList<>();
     private boolean isHtml;
 
     public EmailNotificationEvent() {
